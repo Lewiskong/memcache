@@ -72,7 +72,7 @@ func (cache *memCache) setLru(key cacher.Key,val interface{}){
 }
 
 func (cache *memCache) Get(key cacher.Key) (interface{},bool){
-	return nil,true
+	return cache.cacher.Get(key)
 }
 
 
