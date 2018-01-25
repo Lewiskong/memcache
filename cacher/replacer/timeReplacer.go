@@ -3,6 +3,7 @@ package replacer
 import (
 	"sync"
 	"sync/atomic"
+	"time"
 )
 
 const (
@@ -29,7 +30,49 @@ type node struct {
 }
 
 func (t *tree) replace() []interface{} {
-	return nil
+
+	now := int(time.Now().Unix())
+	keys := make([]interface{}, 0, 128)
+
+	// 找到过期节点
+
+	// 所有的节点均已过期
+	if now > t.root.value {
+		// 删除并返回所有的节点
+		keys = t.pruning(t.root)
+		return keys
+	}
+
+	curNode := t.root
+	for {
+		if curNode == nil {
+			return keys
+		}
+		if curNode.value > now {
+			curNode = curNode.left
+		} else {
+
+		}
+	}
+
+}
+
+func (t *tree) pruning(n *node) []interface{} {
+	t.mutex.Lock()
+	defer t.mutex.Unlock()
+
+	keys := make([]interface{}, 0, 16)
+	if n == nil {
+		return keys
+	}
+
+	keys = append(keys, t.pruning(n.left))
+	keys = append(keys, t.pruning(n.right))
+	n = nil
+
+	t.nodeBuf <- n
+	atomic.AddInt64(&t.nodeCnt, -1)
+	return keys
 }
 
 func (t *tree) remove(keys []interface{}) {
